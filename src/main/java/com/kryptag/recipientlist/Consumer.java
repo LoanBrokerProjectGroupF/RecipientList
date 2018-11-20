@@ -26,15 +26,24 @@ public class Consumer extends RMQConsumer{
 
     @Override
     public void run() {
-        super.run(); //To change body of generated methods, choose Tools | Templates.
+        while(Thread.currentThread().isAlive()){
+            doWork();
+        }
     }
     
     public void doWork(){
         Gson g = new Gson();
+        RMQConnection rmq = this.getRmq();
         aggregatorCon.createConnection();
-        if (!super.getQueue().isEmpty()) {
-            RuleMessage rmsg = g.fromJson(super.getQueue().remove().toString(), RuleMessage.class);
-            rmsg.getBankNames().forEach(bankname -> super.getRmq().sendMessage(g.toJson(rmsg.getCmsg())));
+        if (!this.getQueue().isEmpty()) {
+            RuleMessage rmsg = g.fromJson(this.getQueue().remove().toString(), RuleMessage.class);
+            //rmsg.getBankNames().forEach(bankname -> this.getRmq().sendMessage(g.toJson(rmsg.getCmsg())));
+            for (int i = 0; i < rmsg.getBankNames().size(); i++) {
+                    String bankTranslatorExchange = rmsg.getBankNames().get(i);
+                    rmq.setQueuename(bankTranslatorExchange);
+                    rmq.createConnection();
+                    rmq.sendMessage(g.toJson(rmsg.getCmsg()));
+            }
             sendToAggregator(rmsg);
         }
     }
