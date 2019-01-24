@@ -37,7 +37,6 @@ public class Consumer extends RMQConsumer{
         aggregatorCon.createConnection();
         if (!this.getQueue().isEmpty()) {
             RuleMessage rmsg = g.fromJson(this.getQueue().remove().toString(), RuleMessage.class);
-            //rmsg.getBankNames().forEach(bankname -> this.getRmq().sendMessage(g.toJson(rmsg.getCmsg())));
             for (int i = 0; i < rmsg.getBankNames().size(); i++) {
                     String bankTranslatorExchange = rmsg.getBankNames().get(i);
                     rmq.setQueuename(bankTranslatorExchange);
